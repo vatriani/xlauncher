@@ -27,10 +27,8 @@ int isspace(int);
 
 
 void *memmset(void *s, int c, register size_t n) {
-	unsigned char *p = s;
-
 	while(n--)
-		*p++ = (unsigned char)c;
+		*(unsigned char*)s++ = (unsigned char)c;
 
 	return s;
 }
@@ -38,21 +36,16 @@ void *memmset(void *s, int c, register size_t n) {
 
 
 void *memcpy(void *dest, const void *src, register size_t n) {
-	char *dp = dest;
-	const char *sp = src;
-
 	while (n--)
-		*dp++ = *sp++;
+		*(char*)dest++ = *(const char*)src++;
 
 	return dest;
 }
 
 
-void mallocate(char *array, char c, int size) {
-	register unsigned int counter = 0;
-
-	for(;counter < size; counter++)
-		array[counter] = c;
+void mallocate(char *array, char c,register int size) {
+	while(--size)
+		array[size] = c;
 }
 
 
@@ -118,11 +111,11 @@ int strmncmp(char *s, char *t, unsigned int size) {
 
 
 char* strmstr(char* s, char* t) {
-	int slen = strmlen(s);
 	int tlen = strmlen(t);
+	unsigned int difflen = strmlen(s) - tlen;
 	register int i = 0;
 
-	for (; i < slen-tlen; ++i)
+	for (; i < difflen; ++i)
 		if (strmncmp(t, s+i, tlen) == 0)
 			return s+i;
 	return 0;
@@ -205,7 +198,7 @@ int strmreplace(char **string, char *replace_hint, char *insert_word) {
 
 
 void strmrreplace(char **string, char *replace_hint, char *insert_word) {
-	while( strmreplace(string,replace_hint,insert_word)==0);
+	while( strmreplace(string,replace_hint,insert_word) == 0);
 }
 
 /**
@@ -213,8 +206,8 @@ void strmrreplace(char **string, char *replace_hint, char *insert_word) {
  */
 void strmdelsp(char *s) {
 	if(s != NULL) {
-		char test[strmlen(s)+1];
-		register unsigned int counter=1;
+		char test[strmlen(s) +1];
+		register unsigned int counter = 1;
 
 		memcpy(test,s,strmlen(s)+1);
 		for(;counter<(strmlen(test));++counter) {
@@ -234,13 +227,13 @@ char* strmstripws(char *str, size_t len) {
 	char *newstr = NULL;
 	int newLength = 0;
 
-	for( ;isspace(str[i]); ++i) ;
+	for( ;isspace(str[i]); ++i);
 
 	for(j=len-1; j > 0 && isspace(str[j]); --j) ;
 	++j;
 
 	newLength = j-i;
-	newstr = (char *)calloc(newLength+1,sizeof(char));
+	newstr = (char *)calloc(newLength+1, sizeof(char));
 	if(!newstr)
 		return NULL;
 
@@ -257,7 +250,7 @@ char* strmchr(char* str, char searchFor) {
 	register int counter = 0;
 	int strlen = strmlen(str);
 
-	for(; counter <= strlen; counter++)
+	for(; counter <= strlen; ++counter)
 		if(str[counter] == searchFor) {
 			pointer = &str[counter];
 			break;
@@ -272,7 +265,7 @@ char* strmrchr(char* str, char searchFor) {
 	char* pointer = NULL;
 	register int counter = strmlen(str);
 
-	for(; counter >= 0; counter--)
+	for(; counter >= 0; --counter)
 		if(str[counter] == searchFor) {
 			pointer = &str[counter];
 			break;
