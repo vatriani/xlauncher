@@ -1,0 +1,19 @@
+# Project generated files #
+###########################
+*.o
+xlauncher
+
+# Editor generated files #
+##########################
+*~
+*.bak
+
+# OS generated files #
+######################
+.DS_Store
+_DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
