@@ -1,8 +1,25 @@
+/*
+ *  main.c - of xlauncher main routine
+ * Copyright © 2014 - Niels Neumann  <vatriani.nn@googlemail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <X11/Xresource.h>
-#include <X11/X.h>
-#include <X11/keysymdef.h>
+
 
 #include "string.h"
 #include "file.h"
@@ -53,10 +70,12 @@ static void handleFile(char* name, int unused) {
 	strmcat(&tmpFilename, (char*)applicationsPath);
 	strmcat(&tmpFilename, name);
 
-	if(openFileForRead(&actualFile, tmpFilename) == 1) {
+	if(openFileForRead(&actualFile, tmpFilename)) {
 		char* out = readFromFile(&actualFile);
-		if(out != NULL ) {
+
+		if(out) {
 			char* start = strmstr(out,"Exec=");
+
 			if(strmlen(start) >= 6) {
 				start += 5;
 				*strmstr(start,"\n") = 0;
@@ -65,18 +84,17 @@ static void handleFile(char* name, int unused) {
 			}
 			freeChar(&out);
 		}
-
 		closeFile(&actualFile);
 	}
 	freeChar(&tmpFilename);
 }
 
-inline int searchInList(char *name, list_t* result) {
+inline unsigned int searchInList(char *name, list_t* result) {
 	int counter = 0;
 	list_t* iterator = newList;
 
 	while((iterator = iterator->next)) {
-		if(strmncmp(iterator->val, name, strmlen(name)) == 0) {
+		if(!strmncmp(iterator->val, name, strmlen(name))) {
 			insert_list_element(result, result, iterator->val);
 			++counter;
 		}
