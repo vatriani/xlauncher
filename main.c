@@ -104,13 +104,13 @@ inline unsigned int searchInList(char *name, list_t* result) {
 
 
 int main(int argv, char **argc) {
-	Display *display;				// $DISPLAY .x:1
-	Window window;					// WINDOW
+	static Display *display;				// $DISPLAY .x:1
+	static Window window;					// WINDOW
 	XEvent event;					// EVENTHANDLING
 	int screen;						// $DISPLAY .1:x
 	XFontStruct *font;				// FIRST FOUND FONT
 	char *msg = NULL;				// INPUT FROM KEYBOARD
-	int loop = 1;					// EVENTLOOPBREAKER
+	register int loop = 1;					// EVENTLOOPBREAKER
 	int window_width = 100;			// DEFAULT WINDOW SIZE
 	int window_height = 11;			// DEFAULT WINDOW HEIGHT
 	char *actualResult = NULL;		// ACTUAL PROGRAMM
@@ -119,7 +119,7 @@ int main(int argv, char **argc) {
 
 //--- initial X11 system and draw simple window
 	display = XOpenDisplay(NULL);
-	if (display == NULL) {
+	if (!display) {
 		outerr("Cannot open display\n");
 		return 1;
 	}
@@ -167,7 +167,7 @@ int main(int argv, char **argc) {
 						if (keysym == XK_Return) {
 							if(strmlen(msg) > 0) {
 								loop = 0;
-								if(actualResult!=NULL) {
+								if(actualResult) {
 									char *spacer = strmchr(actualResult, ' ');
 
 									if(spacer)
@@ -197,7 +197,7 @@ int main(int argv, char **argc) {
 							new_width = 1;
 						}
 						else if (keysym == XK_Down) {
-							if(resultOffset != 0) {
+							if(resultOffset) {
 								--resultOffset;
 								new_width = 1;
 							}
@@ -229,6 +229,9 @@ int main(int argv, char **argc) {
 				if(resultCounter > 0) {
 					list_t* iterator = results;
 					actualResult = results->next->val;
+
+					if(resultOffset > resultCounter)
+						--resultOffset;
 
 					if(new_width>=100)
 						XResizeWindow(display, window, new_width, window_height+12*resultCounter);
