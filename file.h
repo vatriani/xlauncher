@@ -1,5 +1,5 @@
 /*
- * file.c - for file, config and cache handling
+ * file.h - for file, config and cache handling
  * Copyright © 2014 - Niels Neumann  <vatriani.nn@googlemail.com>
  *
  * This program is free software: you can redistribute it and/or modify
