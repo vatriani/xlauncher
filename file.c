@@ -133,7 +133,7 @@ int openFileForRead(FILEHANDLER *file, char* name) {
 
 
 void closeFile(FILEHANDLER *file) {
-	if(close(*file) != 0)
+	if(close(*file) != 0 && !file)
 		outerr("error by file closing\n");
 }
 
@@ -156,11 +156,11 @@ char* readFromFile(FILEHANDLER *file) {
 
 
 	while((actualSize = read(*file, (void*)buffer, BUFSIZ))) {
-		if(actualSize==-1) {
+		if(actualSize == -1) {
 			outerr("couldn't read from file\n");
 			return NULL;
 		}
-		buffer[actualSize]=0;
+		buffer[actualSize ] = 0;
 		strmcat(&returnString, buffer);
 	}
 
