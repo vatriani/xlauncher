@@ -189,7 +189,7 @@ int main(int argv, char **argc) {
 						if(strmlen(msg) > 0) {
 							loop = 0;
 							if(actualResult) {
-								char *spacer = strmchr(actualResult, ' ');
+								char *spacer = strmchr(actualResult, '%');
 
 								if(spacer)
 									*spacer = 0;
@@ -216,7 +216,6 @@ int main(int argv, char **argc) {
 					else if (keysym == XK_Up) {
 						if(resultOffset!=0) {
 							--resultOffset;
-
 							new_width = 1;
 						}
 					}
@@ -244,18 +243,20 @@ int main(int argv, char **argc) {
 				list_t* results;
 				results = new_list();
 				resultCounter = searchInList(msg, results);
-				if(resultOffset > resultCounter)
-						resultOffset=resultCounter-1;
+
+				if(resultOffset >= resultCounter)
+						resultOffset = resultCounter - 1;
+
 				bubblesort_list(results,CmpFunc);
 
 				if(resultCounter > 0) {
 					list_t* iterator = results;
 					actualResult = results->next->val;
 
-					if(new_width>=100)
-						XResizeWindow(display, window, new_width, window_height+12*resultCounter);
+					if(new_width >= 100)
+						XResizeWindow(display, window, new_width, window_height + 12 * resultCounter);
 					else
-						XResizeWindow(display, window, window_width, window_height+12*resultCounter);
+						XResizeWindow(display, window, window_width, window_height + 12 * resultCounter);
 
 ///--- drawing search results
 					XClearWindow(display, window);
