@@ -19,13 +19,14 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-
+#include <X11/Xresource.h>
+#include <X11/Xos.h>
+#include <X11/keysymdef.h>
 
 #include "string.h"
 #include "file.h"
 #include "lists.h"
 #include "output.h"
-
 
 
 static list_t* newList;
@@ -106,15 +107,19 @@ inline unsigned int searchInList(char *name, list_t* result) {
 int main(int argv, char **argc) {
 	static Display *display;				// $DISPLAY .x:1
 	static Window window;					// WINDOW
-	XEvent event;					// EVENTHANDLING
-	int screen;						// $DISPLAY .1:x
-	XFontStruct *font;				// FIRST FOUND FONT
-	char *msg = NULL;				// INPUT FROM KEYBOARD
+	XEvent event;							// EVENTHANDLING
+	int screen;								// $DISPLAY .1:x
+	XFontStruct *font;						// FIRST FOUND FONT
+	char *msg = NULL;						// INPUT FROM KEYBOARD
 	register int loop = 1;					// EVENTLOOPBREAKER
-	int window_width = 100;			// DEFAULT WINDOW SIZE
-	int window_height = 11;			// DEFAULT WINDOW HEIGHT
-	char *actualResult = NULL;		// ACTUAL PROGRAMM
-	unsigned int resultOffset = 0;	// ACTUAL LIST OFFSET
+	int window_width = 100;					// DEFAULT WINDOW SIZE
+	int window_height = 11;					// DEFAULT WINDOW HEIGHT
+	char *actualResult = NULL;				// ACTUAL PROGRAMM
+	static unsigned int resultOffset = 0;	// ACTUAL LIST OFFSET
+	XWMHints *wm_hints;
+	XClassHint *class_hints;
+	XTextProperty windowName, iconName;
+	Pixmap icon_pixmap;
 
 
 //--- initial X11 system and draw simple window
@@ -126,6 +131,23 @@ int main(int argv, char **argc) {
 
 	screen = DefaultScreen(display);
 	font = getFirstFoundEntry(display,"a*");
+	char *window_name = "xlauncher";
+	char *icon_name = "basicwin";
+
+	if (!(wm_hints = XAllocWMHints())) return 1;
+	if (!(class_hints = XAllocClassHint())) return 1;
+
+
+	XStringListToTextProperty(&window_name, 1, &windowName);
+	XStringListToTextProperty(&icon_name, 1, &iconName);
+
+	wm_hints->initial_state = NormalState;
+
+	wm_hints->input = True;
+	wm_hints->flags = StateHint | InputHint;
+
+	class_hints->res_name = window_name;
+	class_hints->res_class = icon_name;
 
 	XTextItem first;
 	first.chars = msg;
@@ -133,14 +155,20 @@ int main(int argv, char **argc) {
 	first.delta = 0;
 	first.font = font->fid;
 
-	window = XCreateSimpleWindow(display, RootWindow(display, screen), 0, 0, window_width, window_height, 1, BlackPixel(display, screen), WhitePixel(display, screen));
-	XSelectInput(display, window, ExposureMask | StructureNotifyMask | KeyReleaseMask | KeymapStateMask | LeaveWindowMask | FocusChangeMask);
+	int blackColor = BlackPixel(display, screen);
+	int whiteColor = WhitePixel(display, screen);
+
+	window = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, window_width, window_height, 1, blackColor, whiteColor);
+	XSelectInput(display, window, ExposureMask | KeyReleaseMask );
+
+	XSetWMHints(display,window,wm_hints);
+	XSetWMName(display,window,&windowName);
+
 	XMapWindow(display, window);
 
 //--- initial programm list
 	newList = new_list();
 	dirWalkR((char*)applicationsPath, handleFile);
-
 
 //--- event loop
 	while (loop) {
@@ -148,67 +176,59 @@ int main(int argv, char **argc) {
 
 		XNextEvent(display, &event);
 		switch(event.type) {
-			case KeymapNotify:
-				XRefreshKeyboardMapping(&event.xmapping);
-				break;
 			case Expose:
 				new_width = XTextWidth(font, msg, first.nchars) + 1;
 				break;
 			case KeyRelease:
 				{
-					char string[25];
-					int len;
 					KeySym keysym;
+					int index;
 
-					mallocate(string, 0, 25);
-
-					len = XLookupString(&event.xkey, string, 25, &keysym, NULL);
-					if (len > 0){
-						if (keysym == XK_Return) {
-							if(strmlen(msg) > 0) {
-								loop = 0;
-								if(actualResult) {
-									char *spacer = strmchr(actualResult, ' ');
-
-									if(spacer)
-										*spacer = 0;
-
-									system(actualResult);
-								}
-							}
-							break;
-						}
-						else if (keysym == XK_Escape) {
+					keysym = XLookupKeysym(&event.xkey, index);
+					if (keysym == XK_Return) {
+						if(strmlen(msg) > 0) {
 							loop = 0;
-							break;
-						}
-						else if (keysym == XK_BackSpace) {
-							int lastchar = strmlen(msg);
+							if(actualResult) {
+								char *spacer = strmchr(actualResult, ' ');
 
-							if(lastchar != 0) {
-								msg[lastchar - 1] = 0;
-								--first.nchars;
+								if(spacer)
+									*spacer = 0;
+								system(actualResult);
 							}
-							new_width = XTextWidth(font, msg, first.nchars) + 1;
-							XClearWindow(display, window);
 						}
-						else if (keysym == XK_Up) {
-							++resultOffset;
+						break;
+					}
+					else if (keysym == XK_Escape) {
+						loop = 0;
+						break;
+					}
+					else if (keysym == XK_BackSpace) {
+						int lastchar = strmlen(msg);
+
+						if(lastchar != 0) {
+							msg[lastchar - 1] = 0;
+							--first.nchars;
+						}
+						new_width = XTextWidth(font, msg, first.nchars) + 1;
+						XClearWindow(display, window);
+					}
+					else if (keysym == XK_Up) {
+						if(resultOffset!=0) {
+							--resultOffset;
+
 							new_width = 1;
 						}
-						else if (keysym == XK_Down) {
-							if(resultOffset) {
-								--resultOffset;
-								new_width = 1;
-							}
-						}
-						else {
-							strmcat(&msg, string);
-							first.chars = msg;
-							first.nchars = strmlen(msg);
-							resultOffset = 0;
-							new_width = XTextWidth(font, msg, first.nchars) + 1;
-						}
+					}
+					else if (keysym == XK_Down) {
+						++resultOffset;
+						new_width = 1;
+					}
+					else {
+						strmcat(&msg, XKeysymToString(keysym));
+						first.chars = msg;
+						first.nchars = strmlen(msg);
+						resultOffset = 0;
+						new_width = XTextWidth(font, msg, first.nchars) + 1;
 					}
 				}
 				break;
@@ -223,15 +243,13 @@ int main(int argv, char **argc) {
 				list_t* results;
 				results = new_list();
 				resultCounter = searchInList(msg, results);
-
+				if(resultOffset > resultCounter)
+						resultOffset=resultCounter-1;
 				bubblesort_list(results,CmpFunc);
 
 				if(resultCounter > 0) {
 					list_t* iterator = results;
 					actualResult = results->next->val;
-
-					if(resultOffset > resultCounter)
-						--resultOffset;
 
 					if(new_width>=100)
 						XResizeWindow(display, window, new_width, window_height+12*resultCounter);
@@ -244,6 +262,11 @@ int main(int argv, char **argc) {
 					while((iterator = iterator->next)) {
 						first.chars = iterator->val;
 						first.nchars = strmlen(iterator->val);
+
+						if(resultOffset == counter - 1) {
+							XDrawRectangle(display, window, DefaultGC(display, screen), 0, resultOffset*11 + 11, window_width, 11);
+							actualResult=iterator->val;
+						}
 
 						if(first.nchars > strmlen(msg))
 							XDrawText(display, window, DefaultGC(display, screen), 1, counter*11+11, &first, 1);
@@ -271,6 +294,7 @@ int main(int argv, char **argc) {
 			first.nchars = strmlen(msg);
 			XDrawText(display, window, DefaultGC(display, screen), 1, 10, &first, 1);
 		}
+		XFlush(display);
 	}
 
 //--- CLEANUP
