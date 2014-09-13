@@ -41,7 +41,7 @@
 #define CSI_CYAN    "\x1b[36;1m"
 #define CSI_RESET   "\x1b[0m"
 
-ssize_t write(int,void*,size_t);
+//ssize_t write(int,void*,size_t);
 
 static inline void outplain(char *tmp) {write(1,tmp,strmlen(tmp));}
 static inline void outplainerr(char *tmp) {write(2,tmp,strmlen(tmp));}
