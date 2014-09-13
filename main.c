@@ -159,7 +159,7 @@ int main(int argv, char **argc) {
 	int whiteColor = WhitePixel(display, screen);
 
 	window = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, window_width, window_height, 1, blackColor, whiteColor);
-	XSelectInput(display, window, ExposureMask | KeyReleaseMask );
+	XSelectInput(display, window, ExposureMask | KeyPressMask );
 
 	XSetWMHints(display,window,wm_hints);
 	XSetWMName(display,window,&windowName);
@@ -179,7 +179,7 @@ int main(int argv, char **argc) {
 			case Expose:
 				new_width = XTextWidth(font, msg, first.nchars) + 1;
 				break;
-			case KeyRelease:
+			case KeyPress:
 				{
 					KeySym keysym;
 					int index;
