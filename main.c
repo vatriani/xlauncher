@@ -193,6 +193,7 @@ int main(int argv, char **argc) {
 
 								if(spacer)
 									*spacer = 0;
+								strmcat(&actualResult, " &");
 								system(actualResult);
 							}
 						}
