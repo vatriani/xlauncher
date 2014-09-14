@@ -159,7 +159,7 @@ int main(int argv, char **argc) {
 	int whiteColor = WhitePixel(display, screen);
 
 	window = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, window_width, window_height, 1, blackColor, whiteColor);
-	XSelectInput(display, window, ExposureMask | KeyPressMask );
+	XSelectInput(display, window, ExposureMask | KeyPressMask | FocusChangeMask);
 
 	XSetWMHints(display,window,wm_hints);
 	XSetWMName(display,window,&windowName);
@@ -178,6 +178,9 @@ int main(int argv, char **argc) {
 		switch(event.type) {
 			case Expose:
 				new_width = XTextWidth(font, msg, first.nchars) + 1;
+				break;
+			case FocusOut:
+				loop = 0;
 				break;
 			case KeyPress:
 				{
