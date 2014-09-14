@@ -370,6 +370,19 @@ int strmverscmp (char *s1, char *s2)
     }
 }
 
+char* strmlwr(char*s) {
+	register int counter = 0;
+	unsigned int strlen = strmlen(s);
+	char *ret = NULL;
+
+	strmcat(&ret,s);
+
+	for(;counter < strlen;++counter) {
+		if(ret[counter]>='A' && ret[counter]<='Z')
+			ret[counter]+=32;
+	}
+	return ret;
+}
 
 
 #endif

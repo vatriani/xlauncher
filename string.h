@@ -41,6 +41,6 @@ char* strmstripws(char*,size_t);
 char* strmchr(char*,char);
 char* strmrchr(char*,char);
 int strmverscmp(char*s1,char*);
-
+char* strmlwr(char**s);
 
 #endif
