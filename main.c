@@ -97,7 +97,7 @@ inline unsigned int searchInList(char *name, list_t* result) {
 	list_t* iterator = newList;
 
 	while((iterator = iterator->next)) {
-		if(!strmncmp(iterator->val, name, strmlen(name))) {
+		if(!strmncmp(strmlwr(iterator->val), name, strmlen(name))) {
 			insert_list_element(result, result, iterator->val);
 			++counter;
 		}
