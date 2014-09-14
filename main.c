@@ -70,8 +70,9 @@ static void handleFile(char* name, int unused) {
 
 	strmcat(&tmpFilename, (char*)applicationsPath);
 	strmcat(&tmpFilename, name);
-
-	if(openFileForRead(&actualFile, tmpFilename)) {
+	openFileForRead(&actualFile, tmpFilename);
+	if(actualFile) {
+		outplain(tmpFilename);
 		char* out = readFromFile(&actualFile);
 
 		if(out) {
@@ -79,8 +80,10 @@ static void handleFile(char* name, int unused) {
 
 			if(strmlen(start) >= 6) {
 				start += 5;
-				*strmstr(start,"\n") = 0;
+				char *end = strmchr(start, '\n');
+				if(end) *end = 0;
 				strmcat(&progname, start);
+
 				insert_list_element(newList, newList, progname);
 			}
 			freeChar(&out);
