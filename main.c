@@ -72,7 +72,6 @@ static void handleFile(char* name, int unused) {
 	strmcat(&tmpFilename, name);
 	openFileForRead(&actualFile, tmpFilename);
 	if(actualFile) {
-		outplain(tmpFilename);
 		char* out = readFromFile(&actualFile);
 
 		if(out) {
