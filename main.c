@@ -122,6 +122,8 @@ int main(int argv, char **argc) {
 	XClassHint *class_hints;
 	XTextProperty windowName, iconName;
 	Pixmap icon_pixmap;
+	const char *window_name = "xlauncher";
+	const char *icon_name = "basicwin";
 
 
 //--- initial X11 system and draw simple window
@@ -133,23 +135,19 @@ int main(int argv, char **argc) {
 
 	screen = DefaultScreen(display);
 	font = getFirstFoundEntry(display,"a*");
-	char *window_name = "xlauncher";
-	char *icon_name = "basicwin";
 
 	if (!(wm_hints = XAllocWMHints())) return 1;
 	if (!(class_hints = XAllocClassHint())) return 1;
 
-
-	XStringListToTextProperty(&window_name, 1, &windowName);
-	XStringListToTextProperty(&icon_name, 1, &iconName);
+	XStringListToTextProperty((char**)&window_name, 1, &windowName);
+	XStringListToTextProperty((char**)&icon_name, 1, &iconName);
 
 	wm_hints->initial_state = NormalState;
-
 	wm_hints->input = True;
 	wm_hints->flags = StateHint | InputHint;
 
-	class_hints->res_name = window_name;
-	class_hints->res_class = icon_name;
+	class_hints->res_name = (char*)window_name;
+	class_hints->res_class = (char*)icon_name;
 
 	XTextItem first;
 	first.chars = msg;
@@ -256,9 +254,9 @@ int main(int argv, char **argc) {
 					actualResult = results->next->val;
 
 					if(new_width >= 100)
-						XResizeWindow(display, window, new_width, window_height + 12 * resultCounter);
+						XResizeWindow(display, window, new_width, window_height + 11 * resultCounter);
 					else
-						XResizeWindow(display, window, window_width, window_height + 12 * resultCounter);
+						XResizeWindow(display, window, window_width, window_height + 11 * resultCounter);
 
 ///--- drawing search results
 					XClearWindow(display, window);
