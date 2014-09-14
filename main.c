@@ -224,11 +224,14 @@ int main(int argv, char **argc) {
 						new_width = 1;
 					}
 					else {
-						strmcat(&msg, XKeysymToString(keysym));
-						first.chars = msg;
-						first.nchars = strmlen(msg);
-						resultOffset = 0;
-						new_width = XTextWidth(font, msg, first.nchars) + 1;
+						char *newstr = XKeysymToString(keysym);
+						if(strmlen(newstr)==1) {
+							strmcat(&msg, newstr);
+							first.chars = msg;
+							first.nchars = strmlen(msg);
+							resultOffset = 0;
+							new_width = XTextWidth(font, msg, first.nchars) + 1;
+						}
 					}
 				}
 				break;
