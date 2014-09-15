@@ -19,9 +19,12 @@ make
 for openbox in rc.xml file
 
 adding line for hotkey
+```xml
 <keybind key="W-space"><action name="Execute"><command>xlauncher</command></action></keybind>
+```
 
 adding for no window decoration and place on (0|0) on screen
+```xml
 <application title="xlauncher">
 	<decor>no</decor>
 	<focus>yes</focus>
@@ -30,3 +33,4 @@ adding for no window decoration and place on (0|0) on screen
 		<y>0</y>
 	</position>
 </application>
+```
