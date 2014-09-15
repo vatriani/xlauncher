@@ -32,9 +32,13 @@
 static list_t* newList;
 const char *applicationsPath = "/usr/share/applications/";
 
+typedef struct programm_t{
+	char* exec;
+	char* name;
+} programm;
 
 int system(const char*);
-inline int CmpFunc(void* s,void* t) {return strmverscmp((char*)s,(char*)t);};
+inline int CmpFunc(void* s,void* t) {return strmverscmp(((programm*)s)->name, ((programm*)t)->name);};
 inline void mfreeChar(void* s) {freeChar((char**)&s);};
 
 
@@ -70,20 +74,42 @@ static void handleFile(char* name, int unused) {
 
 	strmcat(&tmpFilename, (char*)applicationsPath);
 	strmcat(&tmpFilename, name);
+
 	openFileForRead(&actualFile, tmpFilename);
+
 	if(actualFile) {
 		char* out = readFromFile(&actualFile);
 
 		if(out) {
-			char* start = strmstr(out,"Exec=");
+			programm *entry;
+			entry = malloc(sizeof(programm));
+			entry->exec = NULL;
+			entry->name = NULL;
 
-			if(strmlen(start) >= 6) {
-				start += 5;
-				char *end = strmchr(start, '\n');
-				if(end) *end = 0;
-				strmcat(&progname, start);
+			char* exec = strmstr(out,"Exec=");
+			char* name = strmstr(out,"Name=");
 
-				insert_list_element(newList, newList, progname);
+			if(strmlen(exec) > 6 && strmlen(name) > 6) {
+				if(!entry)
+					outerr("couldN't malloc\n");
+
+				exec += 5;
+				char *end = strmchr(exec, '\n');
+
+				if(end)
+					*end = 0;
+
+				name += 5;
+				end = strmchr(name, '\n');
+
+				if(end)
+					*end = 0;
+
+				strmcat(&(entry->exec), exec);
+				strmcat(&(entry->name), name);
+
+				insert_list_element(newList, newList, (void*)entry);
+
 			}
 			freeChar(&out);
 		}
@@ -95,10 +121,13 @@ static void handleFile(char* name, int unused) {
 inline unsigned int searchInList(char *name, list_t* result) {
 	int counter = 0;
 	list_t* iterator = newList;
+	programm *prog = NULL;
 
 	while((iterator = iterator->next)) {
-		if(!strmncmp(strmlwr(iterator->val), name, strmlen(name))) {
-			insert_list_element(result, result, iterator->val);
+		prog = ((programm*)iterator->val);
+
+		if(!strmncmp(strmlwr(prog->name), name, strmlen(name))) {
+			insert_list_element(result, result, (void*)prog);
 			++counter;
 		}
 	}
@@ -116,7 +145,7 @@ int main(int argv, char **argc) {
 	register int loop = 1;					// EVENTLOOPBREAKER
 	int window_width = 100;					// DEFAULT WINDOW SIZE
 	int window_height = 11;					// DEFAULT WINDOW HEIGHT
-	char *actualResult = NULL;				// ACTUAL PROGRAMM
+	programm *actualResult = NULL;			// ACTUAL PROGRAMM
 	static unsigned int resultOffset = 0;	// ACTUAL LIST OFFSET
 	XWMHints *wm_hints;
 	XClassHint *class_hints;
@@ -169,7 +198,6 @@ int main(int argv, char **argc) {
 //--- initial programm list
 	newList = new_list();
 	dirWalkR((char*)applicationsPath, handleFile);
-
 //--- event loop
 	while (loop) {
 		int new_width = 0;
@@ -192,12 +220,12 @@ int main(int argv, char **argc) {
 						if(strmlen(msg) > 0) {
 							loop = 0;
 							if(actualResult) {
-								char *spacer = strmchr(actualResult, '%');
+								char *spacer = strmchr(actualResult->exec, '%');
 
 								if(spacer)
 									*spacer = 0;
-								strmcat(&actualResult, " &");
-								system(actualResult);
+								strmcat(&actualResult->exec, " &");
+								system(actualResult->exec);
 							}
 						}
 						break;
@@ -257,7 +285,7 @@ int main(int argv, char **argc) {
 
 				if(resultCounter > 0) {
 					list_t* iterator = results;
-					actualResult = results->next->val;
+					actualResult = ((programm*)results->next->val);
 
 					if(new_width >= 100)
 						XResizeWindow(display, window, new_width, window_height + 11 * resultCounter);
@@ -268,12 +296,12 @@ int main(int argv, char **argc) {
 					XClearWindow(display, window);
 					int counter = 1;
 					while((iterator = iterator->next)) {
-						first.chars = iterator->val;
-						first.nchars = strmlen(iterator->val);
+						first.chars = ((programm*)iterator->val)->name;
+						first.nchars = strmlen(((programm*)iterator->val)->name);
 
 						if(resultOffset == counter - 1) {
 							XDrawRectangle(display, window, DefaultGC(display, screen), 0, resultOffset*11 + 11, window_width, 11);
-							actualResult=iterator->val;
+							actualResult=((programm*)iterator->val);
 						}
 
 						if(first.nchars > strmlen(msg))
