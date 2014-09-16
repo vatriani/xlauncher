@@ -39,7 +39,13 @@ typedef struct programm_t{
 
 int system(const char*);
 inline int CmpFunc(void* s,void* t) {return strmverscmp(((programm*)s)->name, ((programm*)t)->name);};
-inline void mfreeChar(void* s) {freeChar((char**)&s);};
+
+
+inline void mfree(void* s) {
+	freeChar((char**)&((programm*)s)->exec);
+	freeChar((char**)&((programm*)s)->name);
+	free(s);
+};
 
 
 
@@ -334,7 +340,7 @@ int main(int argv, char **argc) {
 	}
 
 //--- CLEANUP
-	clear_list(newList, mfreeChar);
+	clear_list(newList, mfree);
 	XFreeFont(display, font);
 	XCloseDisplay(display);
 	return 0;
