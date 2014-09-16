@@ -292,11 +292,6 @@ int main(int argv, char **argc) {
 					list_t* iterator = results;
 					actualResult = ((programm*)results->next->val);
 
-					if(new_width >= 100)
-						XResizeWindow(display, window, new_width, window_height + 11 * resultCounter);
-					else
-						XResizeWindow(display, window, window_width, window_height + 11 * resultCounter);
-
 ///--- drawing search results
 					XClearWindow(display, window);
 					register int counter = 1;
@@ -309,10 +304,18 @@ int main(int argv, char **argc) {
 							actualResult=((programm*)iterator->val);
 						}
 
+						if((XTextWidth(font, msg, first.nchars) + 1) > new_width)
+							new_width = XTextWidth(font, msg, first.nchars) + 1;
+
 						if(first.nchars >= strmlen(msg))
 							XDrawText(display, window, DefaultGC(display, screen), 1, counter*11+11, &first, 1);
 						++counter;
 					}
+
+					if(new_width >= 100)
+						XResizeWindow(display, window, new_width, window_height + 11 * resultCounter);
+					else
+						XResizeWindow(display, window, window_width, window_height + 11 * resultCounter);
 				}
 				else {
 					actualResult = NULL;
