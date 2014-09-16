@@ -115,7 +115,6 @@ static void handleFile(char* name, int unused) {
 				strmcat(&(entry->name), name);
 
 				insert_list_element(newList, newList, (void*)entry);
-
 			}
 			freeChar(&out);
 		}
@@ -125,7 +124,7 @@ static void handleFile(char* name, int unused) {
 }
 
 inline unsigned int searchInList(char *name, list_t* result) {
-	int counter = 0;
+	register int counter = 0;
 	list_t* iterator = newList;
 	programm *prog = NULL;
 
@@ -275,7 +274,7 @@ int main(int argv, char **argc) {
 		}
 
 
-// --- Handling input
+// --- Handling input and drawing
 		if(new_width != 0) {
 			if(strmlen(msg) > 0) {
 				int resultCounter;
@@ -300,7 +299,7 @@ int main(int argv, char **argc) {
 
 ///--- drawing search results
 					XClearWindow(display, window);
-					int counter = 1;
+					register int counter = 1;
 					while((iterator = iterator->next)) {
 						first.chars = ((programm*)iterator->val)->name;
 						first.nchars = strmlen(((programm*)iterator->val)->name);
@@ -310,7 +309,7 @@ int main(int argv, char **argc) {
 							actualResult=((programm*)iterator->val);
 						}
 
-						if(first.nchars > strmlen(msg))
+						if(first.nchars >= strmlen(msg))
 							XDrawText(display, window, DefaultGC(display, screen), 1, counter*11+11, &first, 1);
 						++counter;
 					}
