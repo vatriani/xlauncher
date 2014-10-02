@@ -143,15 +143,15 @@ inline unsigned int searchInList(char *name, list_t* result) {
 int main(int argv, char **argc) {
 	static Display *display;				// $DISPLAY .x:1
 	static Window window;					// WINDOW
-	XEvent event;							// EVENTHANDLING
-	int screen;								// $DISPLAY .1:x
-	XFontStruct *font;						// FIRST FOUND FONT
-	char *msg = NULL;						// INPUT FROM KEYBOARD
+	XEvent event;						// EVENTHANDLING
+	int screen;						// $DISPLAY .1:x
+	XFontStruct *font;					// FIRST FOUND FONT
+	char *msg = NULL;					// INPUT FROM KEYBOARD
 	register int loop = 1;					// EVENTLOOPBREAKER
 	int window_width = 100;					// DEFAULT WINDOW SIZE
 	int window_height = 11;					// DEFAULT WINDOW HEIGHT
-	programm *actualResult = NULL;			// ACTUAL PROGRAMM
-	static unsigned int resultOffset = 0;	// ACTUAL LIST OFFSET
+	programm *actualResult = NULL;				// ACTUAL PROGRAMM
+	static unsigned int resultOffset = 0;			// ACTUAL LIST OFFSET
 	XWMHints *wm_hints;
 	XClassHint *class_hints;
 	XTextProperty windowName, iconName;
@@ -299,16 +299,17 @@ int main(int argv, char **argc) {
 						first.chars = ((programm*)iterator->val)->name;
 						first.nchars = strmlen(((programm*)iterator->val)->name);
 
-						if(resultOffset == counter - 1) {
-							XDrawRectangle(display, window, DefaultGC(display, screen), 0, resultOffset*11 + 11, window_width, 11);
-							actualResult=((programm*)iterator->val);
-						}
-
 						if((XTextWidth(font, msg, first.nchars) + 1) > new_width)
 							new_width = XTextWidth(font, msg, first.nchars) + 1;
 
 						if(first.nchars >= strmlen(msg))
 							XDrawText(display, window, DefaultGC(display, screen), 1, counter*11+11, &first, 1);
+
+						if(resultOffset == counter - 1) {
+							XDrawRectangle(display, window, DefaultGC(display, screen), 0, resultOffset*11 + 11, new_width, 11);
+							actualResult=((programm*)iterator->val);
+						}
+
 						++counter;
 					}
 
