@@ -29,7 +29,7 @@
 #include "output.h"
 
 
-static list_t* newList;
+list_t* newList;
 const char *applicationsPath = "/usr/share/applications/";
 
 typedef struct programm_t{
@@ -38,10 +38,10 @@ typedef struct programm_t{
 } programm;
 
 int system(const char*);
-inline int CmpFunc(void* s,void* t) {return strmverscmp(((programm*)s)->name, ((programm*)t)->name);};
+int CmpFunc(void* s,void* t) {return strmverscmp(((programm*)s)->name, ((programm*)t)->name);};
 
 
-inline void mfree(void* s) {
+void mfree(void* s) {
 	freeChar((char**)&((programm*)s)->exec);
 	freeChar((char**)&((programm*)s)->name);
 	free(s);
