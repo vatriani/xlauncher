@@ -123,7 +123,7 @@ static void handleFile(char* name, int unused) {
 	freeChar(&tmpFilename);
 }
 
-inline unsigned int searchInList(char *name, list_t* result) {
+unsigned int searchInList(char *name, list_t* result) {
 	register int counter = 0;
 	list_t* iterator = newList;
 	programm *prog = NULL;

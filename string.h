@@ -23,8 +23,8 @@
 
 
 
-void *memmset(void*,int,size_t);
-void *memcpy(void*,const void*,size_t);
+extern void *nemmset(void*,int,size_t);
+extern void *memcpy(void*,const void*,size_t);
 void mallocate(char*,char*,int);
 void freeChar(char**);
 
